@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LRU Cache Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex flex-col items-center py-10 text-white">
+    <h1 class="text-5xl font-extrabold mb-8 drop-shadow-lg text-black">LRU Cache Visualizer</h1>
+    <div class="flex space-x-4 mb-8">
+        <input type="number" id="key" placeholder="Key" class="p-3 border border-gray-300 rounded-lg shadow-md focus:ring-4 focus:ring-yellow-400 bg-white text-gray-900">
+        <input type="number" id="value" placeholder="Value" class="p-3 border border-gray-300 rounded-lg shadow-md focus:ring-4 focus:ring-yellow-400 bg-white text-gray-900">
+        <button onclick="put()" class="px-6 py-3 bg-yellow-400 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-yellow-500 transition">Put</button>
+        <button onclick="get()" class="px-6 py-3 bg-green-400 text-gray-900 font-bold rounded-lg shadow-lg hover:bg-green-500 transition">Get</button>
+    </div>
+    <div class="flex flex-col items-center w-full max-w-3xl">
+        <h2 class="text-3xl font-semibold mb-4 text-black">LRU Cache</h2>
+        <div id="lruCacheDisplay" class="flex flex-wrap gap-4 p-6 border border-gray-300 bg-white text-gray-900 shadow-2xl rounded-lg w-full"></div>
+    </div>
+    <div id="outputDisplay" class="mt-6 text-xl font-bold bg-gray-900 p-5 rounded-lg shadow-lg w-full max-w-3xl text-center border border-gray-300"></div>
+
+    <script>
+        class LRUCache {
+            constructor(capacity) {
+                this.capacity = capacity;
+                this.cache = new Map();
+                this.history = new Map();
+            }
+
+            get(key) {
+                if (!this.cache.has(key)) {
+                    document.getElementById("outputDisplay").textContent = `LRU Cache: Key ${key} not found`;
+                    return;
+                }
+                const value = this.cache.get(key);
+                this.cache.delete(key);
+                this.cache.set(key, value);
+                this.displayCache();
+                
+                const historyValues = this.history.get(key) || [];
+                document.getElementById("outputDisplay").textContent = `LRU Cache: Retrieved Key ${key} -> Values: ${historyValues.join(', ')}`;
+            }
+
+            put(key, value) {
+                if (!this.history.has(key)) {
+                    this.history.set(key, []);
+                }
+                this.history.get(key).push(value);
+                
+                if (this.cache.has(key)) {
+                    this.cache.delete(key);
+                } else if (this.cache.size >= this.capacity) {
+                    const oldestKey = this.cache.keys().next().value;
+                    this.cache.delete(oldestKey);
+                }
+                this.cache.set(key, value);
+                this.displayCache();
+            }
+
+            displayCache() {
+                const cacheDisplay = document.getElementById("lruCacheDisplay");
+                cacheDisplay.innerHTML = "";
+                this.cache.forEach((value, key) => {
+                    const container = document.createElement("div");
+                    container.className = "bg-purple-600 p-5 rounded-lg shadow-lg w-40 text-center border border-purple-300 text-white";
+                    
+                    const keyElement = document.createElement("div");
+                    keyElement.textContent = `Key: ${key}`;
+                    keyElement.className = "font-bold text-lg";
+                    
+                    const valuesContainer = document.createElement("div");
+                    this.history.get(key).forEach(val => {
+                        const valueElement = document.createElement("div");
+                        valueElement.textContent = `Value: ${val}`;
+                        valueElement.className = "bg-yellow-300 text-gray-900 border border-gray-400 p-2 rounded mt-2";
+                        valuesContainer.appendChild(valueElement);
+                    });
+                    
+                    container.appendChild(keyElement);
+                    container.appendChild(valuesContainer);
+                    cacheDisplay.appendChild(container);
+                });
+            }
+        }
+
+        const lruCache = new LRUCache(3);
+
+        function put() {
+            const key = parseInt(document.getElementById("key").value);
+            const value = parseInt(document.getElementById("value").value);
+            if (!isNaN(key) && !isNaN(value)) {
+                lruCache.put(key, value);
+            }
+        }
+
+        function get() {
+            const key = parseInt(document.getElementById("key").value);
+            if (!isNaN(key)) {
+                lruCache.get(key);
+            }
+        }
+    </script>
+</body>
+</html>
