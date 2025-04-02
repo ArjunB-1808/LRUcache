@@ -1,1 +1,1 @@
-# LRUcache
+This Java program implements a Least Recently Used (LRU) Cache using a Circular Doubly Linked List (CDLL) and a HashMap. The cache efficiently manages data storage, ensuring that the most recently accessed elements remain available while the least recently used elements are removed when the cache reaches its capacity.
